@@ -1,6 +1,5 @@
 
 import postgres from "postgres";
-
 const dbUrl = Bun.env.DATABASE_URL;
 if(!dbUrl){
     throw new Error("DB url missing");
@@ -8,7 +7,7 @@ if(!dbUrl){
 
 console.log(dbUrl);
 
-const sql = postgres(dbUrl);
+export const sql = postgres(dbUrl);
 
 export async function  ConnectDb(){
     try {
@@ -18,3 +17,5 @@ export async function  ConnectDb(){
         console.log("DB Connection Failed",e);
     }
 }
+
+export * from "./queries/user.ts"
