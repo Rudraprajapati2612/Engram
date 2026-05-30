@@ -19,3 +19,4 @@ export async function  ConnectDb(){
 }
 
 export * from "./queries/user.ts"
+export * from "./queries/retrieves.ts"
