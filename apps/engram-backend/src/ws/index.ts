@@ -4,6 +4,7 @@ import { retrieveMemories } from "../services/retrieve";
 import { buildSystemPrompt } from "../services/buildPrompt";
 import { StreamsToLLMs } from "../services/LlmStreams";
 import { extractorQueue } from "../queue/queue";
+import { insertMessageTable } from "db/client";
 
 
 const app = new Elysia()
@@ -49,6 +50,9 @@ const app = new Elysia()
                         fullResponse = fullResponse + token;
                     }
 
+                    ws.send(JSON.stringify({type:'done'}))
+                    await insertMessageTable(userId,conversationId,'user',userMessage);
+                    await insertMessageTable(userId,conversationId,'model',fullResponse);
                     // after this i need to add send Full llm response to the worker queue 
                     await extractorQueue.add('extractor',{userId,fullResponse,userMessage})
                 }

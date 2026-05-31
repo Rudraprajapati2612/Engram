@@ -46,3 +46,23 @@ export async function upsertMemory(userId:string,fact:Facts,embeding:number[]){
     `;
   });
 }
+
+interface Message{
+    user_id:string,
+    conversation_id : string,
+    type : string,
+    content : string,
+    createdAt : string
+}
+
+export async function insertMessageTable(userId:string,conversationId:string,type:string,content:string):Promise<Message>{
+    const [message] = await sql<Message[]>`
+    INSERT INTO messages(user_id,conversation_id,type,content)
+    VALUES (${userId},${conversationId},${type},${content})
+    RETURNING *
+    `;
+    if (!message){
+        throw new Error("Message is not exist ")
+    }
+    return message
+}

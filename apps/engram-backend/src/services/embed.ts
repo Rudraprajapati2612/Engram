@@ -13,7 +13,7 @@ export async function embed(content:string){
             outputDimensionality : 768
         }
     })
-    console.log(responseContent.embeddings);
+    // console.log(responseContent.embeddings);
    if(!responseContent.embeddings||responseContent.embeddings.length == 0){
     throw new Error("No Response Embedding is returning From Gemini")
    }

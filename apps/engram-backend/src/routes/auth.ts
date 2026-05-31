@@ -28,10 +28,11 @@ export const authRoute = new Elysia({prefix :"/auth"})
             sub : user.id
         })
         
-        return status(200,`message:{
-                User SignUp SucessFully\n,
-                Token : ${token}
-            }`
+        return status(200,
+            {
+                "message" : "User SignUp SucessFully",
+                "token" : token 
+            }
         )
       },{
         body: t.Object({
