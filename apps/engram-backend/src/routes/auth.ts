@@ -1,4 +1,4 @@
-import { CreateUser, userExist } from "db/client";
+import { CreateUser, userExist, UserExistLogin } from "db/client";
 import bcrypt from "bcrypt";
 import {Elysia,status,t} from "elysia";
 import jwt from "@elysia/jwt";
@@ -11,6 +11,7 @@ export const authRoute = new Elysia({prefix :"/auth"})
             exp : '1d'
         })
     )
+
       .post("/signup",async ({body,jwt})=>{
 
         const email = body.email;
@@ -47,3 +48,47 @@ export const authRoute = new Elysia({prefix :"/auth"})
             })
         })
       })
+      .post("/login",async({body,jwt})=>{
+        const email = body.email;
+        // check for user exist 
+
+        const existingUser = await UserExistLogin(email);
+        if(!existingUser){
+            return status(401,"Email Not Exist Please SignUp First");
+        }
+
+        // check bcrypt password
+        const userPassword = existingUser.password;
+        const valid = await bcrypt.compare(body.password,userPassword)
+
+        if(!valid){
+            return status(402,"Incorrect Password");
+        }
+
+        const token = await jwt.sign({
+            sub : existingUser.id
+        })
+
+        console.log("User LogIn Email",email);
+
+        return status(200,{
+            "message" : "User Login SucessFully",
+            "token" : token 
+        })
+        
+      },
+      {
+        body : t.Object({
+            email : t.String({
+                format : "email",
+                error : "Email must be Present"
+            }),
+
+            password : t.String({
+                minLength : 8,
+                pattern: '.*[0-9].*',
+                error: 'Password must be at least 8 characters and contain at least one number',
+            })
+        })
+      }
+    )

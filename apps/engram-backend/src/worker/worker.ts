@@ -3,7 +3,6 @@ import { extractFacts } from "../services/extractFacts";
 import { embed } from "../services/embed";
 import { insertMessageTable, upsertMemory } from "db/client";
 import { redis } from "../cache/redis";
-import { createHash } from "crypto";
 // import { extractorQueue } from "../queue/queue";
 
 const worker = new Worker('extractor',
@@ -14,14 +13,17 @@ const worker = new Worker('extractor',
         const extractFact = await extractFacts(userMessage,fullResponse);
         
         for(const facts of extractFact ){
-            const vector = await embed(facts.content);
+            const vector = await embed(facts.content,'RETRIEVAL_DOCUMENT');
             await upsertMemory(userId,facts,vector);
         }
 
         
         // remove the cache from the redis 
-        const key = `mem:${userId}:*`;
-        await redis.del(key);
+        const key = await redis.keys(`mem:${userId}:*`);
+        if (key.length>0){
+            await redis.del(...key);
+        }
+        
 
         
     },

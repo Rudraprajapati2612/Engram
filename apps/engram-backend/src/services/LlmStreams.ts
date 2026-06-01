@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const geminiApi = Bun.env.GEMINI_API;
+const geminiApi = Bun.env.GEMENI_API;
 if(!geminiApi){
     throw new Error("Gemini Api Key is missing");
 }

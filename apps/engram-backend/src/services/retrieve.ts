@@ -1,5 +1,5 @@
 import { redis } from "../cache/redis";
-import { createHash, Hash } from "crypto";
+import { createHash } from "crypto";
 import { embed } from "./embed";
 import { RetrieveMemories } from "db/client";
 export async function retrieveMemories(userId:string,query:string):Promise<string[]>{
@@ -14,7 +14,7 @@ export async function retrieveMemories(userId:string,query:string):Promise<strin
     }
 
     //  Convert the input Query(String) into embedding vectors
-    const embedding  = await embed(query); // this will return an array of vecors dimensions
+    const embedding  = await embed(query,'RETRIEVAL_QUERY'); // this will return an array of vecors dimensions
     // fetch the data from the Postgress Database 
 
     const retrivedMemory = await RetrieveMemories(userId,embedding);

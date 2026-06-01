@@ -21,3 +21,4 @@ export async function  ConnectDb(){
 export * from "./queries/user.ts"
 export * from "./queries/retrieves.ts"
 export * from "./queries/upsertMemory.ts"
+export * from "./queries/conversation.ts"

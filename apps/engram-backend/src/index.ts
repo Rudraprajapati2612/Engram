@@ -1,8 +1,10 @@
 import Elysia from "elysia";
-import { ConnectDb,sql } from "db/client";
+import { ConnectDb } from "db/client";
 import swagger from "@elysiajs/swagger";
 import { authRoute } from "./routes/auth";
 import { memoryRoute } from "./routes/memory";
+import { conversationRoute } from "./routes/conversation";
+import { wsRoute } from "./ws";
 const PORT = parseInt(Bun.env.PORT || '3000');
 await ConnectDb();
 const app = new Elysia()
@@ -21,6 +23,8 @@ const app = new Elysia()
   }))
     .use(authRoute)
     .use(memoryRoute)
+    .use(conversationRoute)
+    .use(wsRoute)
     .listen(PORT)
 
     console.log(`

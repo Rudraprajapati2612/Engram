@@ -1,15 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
-const geminiApi = Bun.env.GEMINI_API;
+const geminiApi = Bun.env.GEMENI_API;
 if (!geminiApi){
     throw new Error("Gemini API Key is missing");
 }
 
 const ai = new GoogleGenAI({apiKey : geminiApi});
-export async function embed(content:string){
+export async function embed(content:string,taskType: 'RETRIEVAL_QUERY' | 'RETRIEVAL_DOCUMENT' = 'RETRIEVAL_DOCUMENT'){
     const responseContent = await ai.models.embedContent({
         model : 'gemini-embedding-2',
         contents : content,
         config : {
+            taskType,
             outputDimensionality : 768
         }
     })
