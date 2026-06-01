@@ -72,7 +72,10 @@ export const wsRoute = new Elysia()
 
             console.log("15. Queueing extractor job");
 
-            await extractorQueue.add('extractor', { userId, fullResponse, userMessage });
+            await extractorQueue.add('extractor', { userId, fullResponse, userMessage }, {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 2000 },
+            });
 
              console.log("16. Extractor job queued");
         }

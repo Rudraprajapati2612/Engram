@@ -10,6 +10,14 @@ const SUPERSEDE_DISTANCE = 0.15;
 export async function upsertMemory(userId:string,fact:Facts,embeding:number[]){
     const vectorStr = `[${embeding.join(",")}]`
 
+    // Skip exact duplicates — no point storing the same string twice
+    const [exactMatch] = await sql<{ id: string }[]>`
+        SELECT id FROM memories
+        WHERE user_id = ${userId} AND content = ${fact.content} AND active = TRUE
+        LIMIT 1
+    `;
+    if (exactMatch) return;
+
       const [nearest] = await sql<{ id: string; distance: number }[]>`
     SELECT id, embedding <=> ${vectorStr}::vector AS distance
     FROM memories

@@ -36,47 +36,44 @@ export async function extractFacts(
   usrMessage: string,
   assistantMessage: string,
 ): Promise<Facts[]> {
+  const conversation = `Users :${usrMessage}\n Assistant: ${assistantMessage}`;
+
+  // API call — let errors propagate so BullMQ retries on 503/network failures
+  const response = await ai.models.generateContent({
+    model: "gemini-3.5-flash",
+    contents: conversation,
+    config: {
+      systemInstruction: EXTRACTION_PROMPT,
+      responseMimeType: "application/json",
+    },
+  });
+
+  const rawJson = response.text;
+  if (!rawJson) return [];
+
+  // Parse errors mean the LLM returned garbage — retrying won't help, return []
   try {
-    const conversation = `Users :${usrMessage}\n Assistant: ${assistantMessage}`;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: conversation,
-      config: {
-        systemInstruction: EXTRACTION_PROMPT,
-        responseMimeType: "application/json",
-      },
-    });
-
-    const rawJson = response.text;
-    if (!rawJson) {
-      return [];
-    }
-
     const parsed = JSON.parse(rawJson);
+    if (!Array.isArray(parsed)) return [];
 
-    if (!Array.isArray(parsed)){
-        return []
-    }
-
-    const validParse:Facts[] = parsed.filter((item)=>{
-        return (
-            typeof item === "object" &&
-            item != null &&
-            ['preference','fact','event','relationship'].includes(item.type)&&
-            typeof item.content === "string"
-        );
-    }).map((item)=>({
-        type : item.type,
-        content : item.content.trim(),
-        confidence : 
-        typeof item.confidence === "number" ? Math.min(1,Math.max(0,item.confidence)):0.8
-    }))
-    
-    return validParse;
+    return parsed
+      .filter(
+        (item) =>
+          typeof item === "object" &&
+          item != null &&
+          ["preference", "fact", "event", "relationship"].includes(item.type) &&
+          typeof item.content === "string",
+      )
+      .map((item) => ({
+        type: item.type,
+        content: item.content.trim(),
+        confidence:
+          typeof item.confidence === "number"
+            ? Math.min(1, Math.max(0, item.confidence))
+            : 0.8,
+      }));
   } catch (e) {
-    console.error("Failed to extract or parse facts:", e);
-    // If the LLM hallucinates bad JSON, we just return an empty array to prevent a crash
+    console.error("Failed to parse facts JSON from LLM:", e);
     return [];
   }
 }
